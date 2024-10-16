@@ -27,8 +27,8 @@ class PacketData(db.Model):
     dst_ip = db.Column(db.String(39), nullable=False)
     
     # Transport Layer (TCP/UDP)
-    sport = db.Column(db.Integer)
-    dport = db.Column(db.Integer)
+    sport = db.Column(db.Integer, nullable=True)
+    dport = db.Column(db.Integer, nullable=True)
     
     # TCP specific
     tcp_seq = db.Column(db.BigInteger)
@@ -47,7 +47,7 @@ class PacketData(db.Model):
     human_readable = db.Column(db.Text)
     
     # Device information
-    device_name = db.Column(db.String(255))
+    device_name = db.Column(db.String(255), nullable=False, default="Unknown")
     
     # Encryption status
     is_encrypted = db.Column(db.Boolean, default=False)
@@ -57,3 +57,15 @@ class PacketData(db.Model):
 
     def __repr__(self):
         return f'<PacketData {self.id}: {self.src_ip}:{self.sport} -> {self.dst_ip}:{self.dport}>'
+
+
+class DeviceData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    device_name = db.Column(db.String(255), nullable=False, default="Unknown")
+    ip_address = db.Column(db.String(39), nullable=False)
+    mac_address = db.Column(db.String(17), nullable=True)  # MAC address format: XX:XX:XX:XX:XX:XX
+    device_type = db.Column(db.String(50), nullable=True)
+    last_seen = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<DeviceData {self.device_name}: {self.ip_address} ({self.device_type})>'
