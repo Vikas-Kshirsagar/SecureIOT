@@ -62,10 +62,35 @@ class PacketData(db.Model):
 class DeviceData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     device_name = db.Column(db.String(255), nullable=False, default="Unknown")
+    product = db.Column(db.String(255))  # New column
     ip_address = db.Column(db.String(39), nullable=False)
-    mac_address = db.Column(db.String(17), nullable=True)  # MAC address format: XX:XX:XX:XX:XX:XX
+    mac_address = db.Column(db.String(17), nullable=True)
     device_type = db.Column(db.String(50), nullable=True)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_scanned = db.Column(db.DateTime, nullable=True)
+    
+    os_name = db.Column(db.String(255))
+    os_accuracy = db.Column(db.Integer)
+    uptime = db.Column(db.String(255))
+    tcp_sequence_difficulty = db.Column(db.String(50))
+    
+    open_ports = db.Column(db.JSON)
 
     def __repr__(self):
         return f'<DeviceData {self.device_name}: {self.ip_address} ({self.device_type})>'
+
+class PortInfo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.Integer, db.ForeignKey('device_data.id'), nullable=False)
+    port_number = db.Column(db.Integer, nullable=False)
+    protocol = db.Column(db.String(10), nullable=False)
+    state = db.Column(db.String(20), nullable=False)
+    service = db.Column(db.String(50))
+    version = db.Column(db.String(100))
+    product = db.Column(db.String(100))
+    extra_info = db.Column(db.Text)
+
+    device = db.relationship('DeviceData', backref=db.backref('ports', lazy=True))
+
+    def __repr__(self):
+        return f'<PortInfo {self.port_number}/{self.protocol} ({self.state})>'
