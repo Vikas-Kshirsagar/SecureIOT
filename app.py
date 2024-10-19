@@ -18,19 +18,31 @@ def update_device_data(packet_info):
         ip_address = packet_info['src_ip']
         mac_address = packet_info.get('eth_src')
 
-        device = DeviceData.query.filter_by(mac_address=mac_address).first()
+        device = DeviceData.query.filter_by(ip_address=ip_address).first()
         if device:
-            device.ip_address = ip_address
             if device_name != 'Unknown':
                 device.device_name = device_name
+            if mac_address:
+                device.mac_address = mac_address
             device.last_seen = datetime.utcnow()
         else:
-            new_device = DeviceData(
-                device_name=device_name,
-                ip_address=ip_address,
-                mac_address=mac_address,
-            )
-            db.session.add(new_device)
+            device = DeviceData.query.filter_by(mac_address=mac_address).first() if mac_address else None
+
+            if device:
+                # If device exists with this MAC, update its IP address
+                device.ip_address = ip_address
+                if device_name != 'Unknown':
+                    device.device_name = device_name
+                device.last_seen = datetime.utcnow()
+            else:
+                # If no device with this IP or MAC exists, create a new entry
+                new_device = DeviceData(
+                    device_name=device_name,
+                    ip_address=ip_address,
+                    mac_address=mac_address,
+                )
+                db.session.add(new_device)
+                device = new_device
         
         try:
             db.session.commit()
@@ -70,6 +82,7 @@ def run_async_tasks():
     asyncio.set_event_loop(loop)
     
     async def run_with_context():
+        await asyncio.sleep(30)
         await start_scan_for_new_devices(app)
     
     loop.create_task(run_with_context())

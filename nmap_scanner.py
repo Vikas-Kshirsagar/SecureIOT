@@ -32,7 +32,8 @@ def determine_device_type(port_info):
 async def scan_device(app, ip_address):
     print(f"Starting Nmap scan for {ip_address}...")
     try:
-        scan_data = nm.scan(hosts=ip_address, arguments='-n -Pn -sS -pT:0-65535 -A')
+        #scan_data = nm.scan(hosts=ip_address, arguments='-n -Pn -sS -p 80,443 -v -A')
+        scan_data = nm.scan(hosts=ip_address, arguments='-n -Pn -sS -pT:0-65535 -T5 -v -A')
 
         if ip_address not in nm.all_hosts():
             raise ValueError(f"No scan results found for {ip_address}. Host might be down or unreachable.")
@@ -82,15 +83,12 @@ async def scan_device(app, ip_address):
             db.session.commit()
         print(f"Nmap scan completed for {ip_address}")
         print("########################################################################################################################################")
-        print("########################################################################################################################################")
 
     except Exception as e:
         print(f"Error scanning {ip_address}: {str(e)}")
 
 async def start_scan_for_new_devices(app):
     while True:
-        print("########################################################################################################################################")
-        print("########################################################################################################################################")
         print("########################################################################################################################################")
         with app.app_context():
             session = db.session()
@@ -110,4 +108,4 @@ async def start_scan_for_new_devices(app):
             finally:
                 session.close()
         
-        await asyncio.sleep(300)  # Wait for 5 minutes before checking for new devices again
+        await asyncio.sleep(30)  # Wait for 5 minutes before checking for new devices again
