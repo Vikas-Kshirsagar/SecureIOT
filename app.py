@@ -25,7 +25,9 @@ def update_device_data(packet_info):
             if mac_address:
                 device.mac_address = mac_address
             device.last_seen = datetime.utcnow()
+            '''
         else:
+            #device = DeviceData.query.filter_by(mac_address=mac_address).first() if mac_address else None
             device = DeviceData.query.filter_by(mac_address=mac_address).first() if mac_address else None
 
             if device:
@@ -35,15 +37,17 @@ def update_device_data(packet_info):
                     device.device_name = device_name
                 device.last_seen = datetime.utcnow()
             else:
-                # If no device with this IP or MAC exists, create a new entry
-                new_device = DeviceData(
-                    device_name=device_name,
-                    ip_address=ip_address,
-                    mac_address=mac_address,
-                )
-                db.session.add(new_device)
-                device = new_device
-        
+            '''
+        else:
+            # If no device with this IP or MAC exists, create a new entry
+            new_device = DeviceData(
+            device_name=device_name,
+            ip_address=ip_address,
+            mac_address=mac_address,
+            )
+            db.session.add(new_device)
+            device = new_device
+
         try:
             db.session.commit()
             if not device:  # If it's a new device, trigger a scan
@@ -64,7 +68,13 @@ def packet_callback(packet):
         dst_port = packet_info.get('dport', 'N/A')
         print(f"Captured packet: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
         
-        update_device_data(packet_info)
+        ## THIS SHOULD BE UPDATED LATER 
+        #update_device_data(packet_info)
+
+        ## REMOVE THIS FOR ALL TRAFFIC
+        if packet_info['src_ip'] in ['192.168.137.3', '192.168.137.91']:
+            update_device_data(packet_info)
+            print(f"Table Updated: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
 
 def initialize_sniffer():
     sniffer_thread = threading.Thread(target=start_sniffing, args=(packet_callback,))
