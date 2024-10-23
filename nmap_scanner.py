@@ -1,10 +1,76 @@
 import nmap
 from datetime import datetime, timedelta
 import asyncio
-from models import db, DeviceData, PortInfo
+from models import db, DeviceData, PortInfo, SecurityRecommendation
 
 nmap_path = [r"C:\Program Files (x86)\Nmap\nmap.exe",]
 nm = nmap.PortScanner(nmap_search_path=nmap_path)
+
+async def encryption_recommendation_engine(app, ip_address):
+    with app.app_context():
+        device = DeviceData.query.filter_by(ip_address=ip_address).first()
+        if not device:
+            print(f"No device found with IP: {ip_address}")
+            return
+
+        for port_info in device.ports:
+            # Check if a recommendation already exists
+            existing_recommendation = SecurityRecommendation.query.filter_by(
+                device_ip=ip_address,
+                port=port_info.port_number
+            ).first()
+
+            if existing_recommendation:
+                # Update existing recommendation
+                update_recommendation(existing_recommendation, device, port_info)
+            else:
+                # Create new recommendation
+                new_recommendation = create_recommendation(device, port_info)
+                db.session.add(new_recommendation)
+
+        db.session.commit()
+
+def update_recommendation(recommendation, device, port_info):
+    recommendation.device_name = device.device_name
+    recommendation.status = port_info.state
+    recommendation.service = port_info.service
+    update_recommendation_details(recommendation, port_info)
+
+def create_recommendation(device, port_info):
+    recommendation = SecurityRecommendation(
+        device_name=device.device_name,
+        device_ip=device.ip_address,
+        port=port_info.port_number,
+        status=port_info.state,
+        service=port_info.service
+    )
+    update_recommendation_details(recommendation, port_info)
+    return recommendation
+
+def update_recommendation_details(recommendation, port_info):
+    # Determine if encryption is needed and what type
+    if port_info.service in ['http', 'ftp', 'telnet']:
+        recommendation.encryption_needed = True
+        recommendation.certificate_required = True
+        recommendation.current_encryption = 'None'
+        recommendation.current_state = f'Unencrypted {port_info.service.upper()}'
+        recommendation.recommendation = f'Install SSL certificate and switch to {port_info.service.upper()}S'
+    elif port_info.service in ['https', 'ftps', 'ssh']:
+        recommendation.encryption_needed = True
+        recommendation.certificate_required = True
+        # check if the current TLS is set properly and certs are installed for port 443 and others
+        recommendation.current_encryption = 'SSL/TLS'
+        recommendation.current_state = f'Encrypted {port_info.service.upper()}'
+        recommendation.recommendation = 'Ensure SSL/TLS certificate is up to date'
+    else:
+        recommendation.encryption_needed = False
+        recommendation.certificate_required = False
+        recommendation.current_encryption = 'Unknown'
+        recommendation.current_state = f'Unknown service on port {port_info.port_number}'
+        recommendation.recommendation = 'Investigate service and determine if encryption is needed'
+
+    recommendation.action_taken = 'Pending'
+    recommendation.status = 'Under Investigation'
 
 def determine_device_type(product):
     common_devices = {
@@ -77,9 +143,14 @@ async def scan_device(app, ip_address):
                 device.uptime = uptime.get('lastboot', 'Unknown')
 
             device.tcp_sequence_difficulty = scan_data['scan'][ip_address].get('tcpsequence', {}).get('difficulty', 'Unknown')
-
+            port_lt=[]
             # Update device_type and product
             if 'tcp' in host_info:
+                
+                for port, port_info in host_info['tcp'].items():
+                    if port not in port_lt:
+                        port_lt.append(port)
+
                 for port, port_info in host_info['tcp'].items():
                     if 'product' in port_info and port_info['product']:
                         device.product = port_info['product']
@@ -99,10 +170,12 @@ async def scan_device(app, ip_address):
                     port_obj.extra_info = port_info.get('extrainfo', '')
 
             device.last_scanned = datetime.utcnow()
+            if len(port_lt)!=0:    
+                device.open_ports=port_lt[:]
             db.session.commit()
         print(f"Nmap scan completed for {ip_address}")
         print("########################################################################################################################################")
-
+        await encryption_recommendation_engine(app, ip_address)
     except Exception as e:
         print(f"Error scanning {ip_address}: {str(e)}")
 

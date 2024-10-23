@@ -58,7 +58,6 @@ class PacketData(db.Model):
     def __repr__(self):
         return f'<PacketData {self.id}: {self.src_ip}:{self.sport} -> {self.dst_ip}:{self.dport}>'
 
-
 class DeviceData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     device_name = db.Column(db.String(255), nullable=False, default="Unknown")
@@ -94,3 +93,22 @@ class PortInfo(db.Model):
 
     def __repr__(self):
         return f'<PortInfo {self.port_number}/{self.protocol} ({self.state})>'
+    
+class SecurityRecommendation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    device_name = db.Column(db.String(255), nullable=False)
+    device_ip = db.Column(db.String(39), nullable=False)
+    port = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(20), nullable=False)
+    service = db.Column(db.String(50))
+    certificate_required = db.Column(db.Boolean)
+    encryption_needed = db.Column(db.Boolean)
+    current_encryption = db.Column(db.String(50))
+    current_state = db.Column(db.String(255))
+    recommendation = db.Column(db.Text)
+    action_taken = db.Column(db.Text)
+    status = db.Column(db.String(20))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<SecurityRecommendation {self.device_name}:{self.port} - {self.status}>'
