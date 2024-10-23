@@ -6,33 +6,42 @@ from models import db, DeviceData, PortInfo
 nmap_path = [r"C:\Program Files (x86)\Nmap\nmap.exe",]
 nm = nmap.PortScanner(nmap_search_path=nmap_path)
 
-def determine_device_type(port_info):
-    common_ports = {
-        80: "Web Server",
-        443: "Web Server (HTTPS)",
-        554: "IP Camera/Webcam (RTSP)",
-        8080: "Web Server/Proxy",
-        8554: "IP Camera/Webcam (RTSP)",
-        9100: "Printer",
-        21: "FTP Server",
-        22: "SSH Server",
-        23: "Telnet Server",
-        25: "SMTP Server",
-        53: "DNS Server",
-        3306: "MySQL Database",
-        3389: "Remote Desktop"
+def determine_device_type(product):
+    common_devices = {
+        "camera":0,
+        "TV":0,
+        "speaker":0,
+        "printer":0,
+        "Lamp":0,
+        "iOS":0,
+        "windows":0
     }
-    
-    for port, info in port_info.items():
-        if int(port) in common_ports:
-            return common_ports[int(port)]
-    
-    return "Unknown"
 
+    if product:
+        port_info_words = product.split()
+        for word in port_info_words:
+            for device in common_devices:
+                if device.lower() in word.lower():  # Case-insensitive match
+                    common_devices[device] += 1
+            
+            if word.lower() in ['cam', 'dashcam', 'webcam']:
+                common_devices["camera"] += 1
+
+            if word.lower() in ['FireTV']:
+                common_devices["TV"] += 1
+
+
+    max_device = max(common_devices, key=common_devices.get)
+
+    if common_devices[max_device] > 0:
+        return max_device
+    else:
+        return "Unknown"
+            
 async def scan_device(app, ip_address):
     print(f"Starting Nmap scan for {ip_address}...")
     try:
-        #scan_data = nm.scan(hosts=ip_address, arguments='-n -Pn -sS -p 80,443 -v -A')
+        #scan_data = nm.scan(hosts=ip_address, arguments='-n -Pn -sS -p 80,443 -T5 -v -A')
         scan_data = nm.scan(hosts=ip_address, arguments='-n -Pn -sS -pT:0-65535 -T5 -v -A')
 
         if ip_address not in nm.all_hosts():
@@ -71,10 +80,10 @@ async def scan_device(app, ip_address):
 
             # Update device_type and product
             if 'tcp' in host_info:
-                device.device_type = determine_device_type(host_info['tcp'])
                 for port, port_info in host_info['tcp'].items():
-                    if 'product' in port_info:
+                    if 'product' in port_info and port_info['product']:
                         device.product = port_info['product']
+                        device.device_type = determine_device_type(port_info['product'])
                         break  # Use the first product found
 
                 for port, port_info in host_info['tcp'].items():

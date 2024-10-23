@@ -72,7 +72,7 @@ def packet_callback(packet):
         #update_device_data(packet_info)
 
         ## REMOVE THIS FOR ALL TRAFFIC
-        if packet_info['src_ip'] in ['192.168.137.3', '192.168.137.91']:
+        if packet_info['src_ip'] in ['192.168.137.25', '192.168.137.213', '192.168.137.72']:
             update_device_data(packet_info)
             print(f"Table Updated: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
 
