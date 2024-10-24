@@ -88,7 +88,8 @@ class PortInfo(db.Model):
     version = db.Column(db.String(100))
     product = db.Column(db.String(100))
     extra_info = db.Column(db.Text)
-
+    last_scanned = db.Column(db.DateTime, nullable=True)
+   
     device = db.relationship('DeviceData', backref=db.backref('ports', lazy=True))
 
     def __repr__(self):

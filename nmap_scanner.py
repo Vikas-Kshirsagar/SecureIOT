@@ -2,18 +2,97 @@ import nmap
 from datetime import datetime, timedelta
 import asyncio
 from models import db, DeviceData, PortInfo, SecurityRecommendation
+import ssl
+import socket
+from datetime import datetime
 
 nmap_path = [r"C:\Program Files (x86)\Nmap\nmap.exe",]
 nm = nmap.PortScanner(nmap_search_path=nmap_path)
 
+def check_tls_certificate(host, port):
+    try:
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+
+        with socket.create_connection((host, port), timeout=5) as sock:
+            with context.wrap_socket(sock, server_hostname=None) as ssock:
+                cert = ssock.getpeercert()
+
+                if cert:
+                    not_after = cert['notAfter']
+                    not_after = datetime.strptime(not_after, '%b %d %H:%M:%S %Y %Z')
+
+                    current_date = datetime.utcnow()
+                    if current_date > not_after:
+                        return "Certificate has expired!"
+                    elif (not_after - current_date) < timedelta(days=30):
+                        return f"Certificate will expire soon! Valid until {not_after}."
+                    else:
+                        return f"Certificate is valid until {not_after}."
+                else:
+                    return "Port is open, but no certificate installed."
+    except ssl.SSLError as e:
+        if "certificate verify failed" in str(e):
+            return "Certificate verification failed: self-signed certificate or untrusted CA."
+        elif "wrong version number" in str(e):
+            return "SSL/TLS handshake failed: Protocol version mismatch."
+        elif "no peer certificate" in str(e):
+            return "No SSL/TLS certificate found on the server."
+        else:
+            return f"SSL error: {str(e)}"
+    except ConnectionRefusedError:
+        return f"Connection to {host}:{port} refused!"
+    except socket.timeout:
+        return f"Connection to {host}:{port} timed out."
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+def check_port_and_tls(host, port):
+    try:
+        with socket.create_connection((host, port), timeout=5):
+            print(f"Port {port} is open, checking TLS certificate...")
+            return check_tls_certificate(host, port)
+    except ConnectionRefusedError:
+        return f"Port {port} is closed on {host}."
+    except socket.timeout:
+        return f"Connection to {host}:{port} timed out."
+    except Exception as e:
+        return f"Error: {str(e)}"
+
 async def encryption_recommendation_engine(app, ip_address):
+    print(f"Starting encryption recommendation engine for IP: {ip_address}")
+    
     with app.app_context():
+        # Check if device exists
         device = DeviceData.query.filter_by(ip_address=ip_address).first()
         if not device:
             print(f"No device found with IP: {ip_address}")
             return
 
-        for port_info in device.ports:
+        # Check if port info exists for the device
+        port_info_exists = PortInfo.query.filter_by(device_id=device.id).first()
+        if not port_info_exists:
+            print(f"No port information available for device {ip_address}. Skipping recommendation engine.")
+            return
+
+        # Get all ports for the device
+        device_ports = PortInfo.query.filter_by(device_id=device.id).all()
+        
+        # Check if ports need updating based on last scan
+        needs_update = False
+        for port in device_ports:
+            if (not port.last_scanned) or (device.last_scanned and port.last_scanned < device.last_scanned):
+                needs_update = True
+                break
+
+        if not needs_update:
+            print(f"Port information is up to date for device {ip_address}")
+            return
+
+        print(f"Updating recommendations for device {device.device_name} ({ip_address})")
+
+        for port_info in device_ports:
             # Check if a recommendation already exists
             existing_recommendation = SecurityRecommendation.query.filter_by(
                 device_ip=ip_address,
@@ -21,20 +100,23 @@ async def encryption_recommendation_engine(app, ip_address):
             ).first()
 
             if existing_recommendation:
-                # Update existing recommendation
                 update_recommendation(existing_recommendation, device, port_info)
             else:
-                # Create new recommendation
                 new_recommendation = create_recommendation(device, port_info)
                 db.session.add(new_recommendation)
 
-        db.session.commit()
+        try:
+            db.session.commit()
+            print(f"Successfully updated recommendations for {ip_address}")
+        except Exception as e:
+            print(f"Error committing recommendations: {str(e)}")
+            db.session.rollback()
 
 def update_recommendation(recommendation, device, port_info):
     recommendation.device_name = device.device_name
     recommendation.status = port_info.state
     recommendation.service = port_info.service
-    update_recommendation_details(recommendation, port_info)
+    update_recommendation_details(recommendation, port_info, device)
 
 def create_recommendation(device, port_info):
     recommendation = SecurityRecommendation(
@@ -44,24 +126,49 @@ def create_recommendation(device, port_info):
         status=port_info.state,
         service=port_info.service
     )
-    update_recommendation_details(recommendation, port_info)
+    update_recommendation_details(recommendation, port_info, device)
     return recommendation
 
-def update_recommendation_details(recommendation, port_info):
-    # Determine if encryption is needed and what type
+def update_recommendation_details(recommendation, port_info, device):
     if port_info.service in ['http', 'ftp', 'telnet']:
         recommendation.encryption_needed = True
         recommendation.certificate_required = True
         recommendation.current_encryption = 'None'
         recommendation.current_state = f'Unencrypted {port_info.service.upper()}'
-        recommendation.recommendation = f'Install SSL certificate and switch to {port_info.service.upper()}S'
+        
+        secure_service = {
+            'http': 'HTTPS',
+            'ftp': 'FTPS',
+            'telnet': 'SSH'
+        }.get(port_info.service, f'{port_info.service.upper()}S')
+        
+        recommendation.recommendation = f'Install SSL/TLS certificate and switch to {secure_service}'
+        
     elif port_info.service in ['https', 'ftps', 'ssh']:
         recommendation.encryption_needed = True
         recommendation.certificate_required = True
-        # check if the current TLS is set properly and certs are installed for port 443 and others
         recommendation.current_encryption = 'SSL/TLS'
-        recommendation.current_state = f'Encrypted {port_info.service.upper()}'
-        recommendation.recommendation = 'Ensure SSL/TLS certificate is up to date'
+        
+        # Check TLS configuration
+        tls_status = check_port_and_tls(device.ip_address, port_info.port_number)
+        recommendation.current_state = tls_status
+        
+        # Set recommendations based on TLS status
+        if "expired" in tls_status.lower():
+            recommendation.recommendation = "URGENT: Replace expired SSL/TLS certificate"
+        elif "will expire soon" in tls_status.lower():
+            recommendation.recommendation = "Plan to renew SSL/TLS certificate before expiration"
+        elif "verification failed" in tls_status.lower():
+            recommendation.recommendation = "Replace self-signed certificate with one from a trusted CA"
+        elif "handshake failed" in tls_status.lower():
+            recommendation.recommendation = "Check and update SSL/TLS configuration"
+        elif "no certificate" in tls_status.lower():
+            recommendation.recommendation = "Install valid SSL/TLS certificate"
+        elif "valid until" in tls_status.lower():
+            recommendation.recommendation = "Certificate is properly configured"
+        else:
+            recommendation.recommendation = "Investigate SSL/TLS configuration"
+            
     else:
         recommendation.encryption_needed = False
         recommendation.certificate_required = False
@@ -168,6 +275,7 @@ async def scan_device(app, ip_address):
                     port_obj.version = port_info.get('version', 'Unknown')
                     port_obj.product = port_info.get('product', 'Unknown')
                     port_obj.extra_info = port_info.get('extrainfo', '')
+                    port_obj.last_scanned = datetime.utcnow()
 
             device.last_scanned = datetime.utcnow()
             if len(port_lt)!=0:    

@@ -66,15 +66,15 @@ def packet_callback(packet):
         
         src_port = packet_info.get('sport', 'N/A')
         dst_port = packet_info.get('dport', 'N/A')
-        print(f"Captured packet: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
+        #print(f"Captured packet: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
         
         ## THIS SHOULD BE UPDATED LATER 
         #update_device_data(packet_info)
 
         ## REMOVE THIS FOR ALL TRAFFIC
-        if packet_info['src_ip'] in ['192.168.137.25', '192.168.137.213', '192.168.137.72']:
+        if packet_info['src_ip'] in ['192.168.137.25', '192.168.137.213', '192.168.137.193']:
             update_device_data(packet_info)
-            print(f"Table Updated: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
+            #print(f"Table Updated: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
 
 def initialize_sniffer():
     sniffer_thread = threading.Thread(target=start_sniffing, args=(packet_callback,))
