@@ -2,3 +2,11 @@ Flask==2.2.0
 Flask-SQLAlchemy==3.1.1
 SQLAlchemy==1.4.46
 scapy==2.5.0
+python-nmap==0.7.1
+asyncio==3.4.3
+aiohttp==3.8.1
+python-dateutil==2.8.2
+pytz==2022.1
+netifaces==0.11.0
+pycrypto==2.6.1
+cryptography==3.4.7

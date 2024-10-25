@@ -1,0 +1,23 @@
+<!-- dashboard.html -->
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-bold mb-4">Device Overview</h2>
+        <div id="deviceStats" class="space-y-2">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-bold mb-4">Recent Activity</h2>
+        <div id="recentPackets" class="space-y-2">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

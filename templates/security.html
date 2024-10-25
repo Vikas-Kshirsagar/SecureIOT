@@ -1,0 +1,14 @@
+<!-- security.html -->
+{% extends "base.html" %}
+{% block title %}Security Recommendations{% endblock %}
+{% block content %}
+<div class="bg-white p-4 rounded-lg shadow">
+    <h2 class="text-lg font-bold mb-4">Security Analysis</h2>
+    <div id="securityRecommendations" class="space-y-4">
+        <!-- Content will be populated by JavaScript -->
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/security.js') }}"></script>
+{% endblock %}

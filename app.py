@@ -1,13 +1,13 @@
-from flask import Flask
+from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from models import PacketData, DeviceData, PortInfo, db
+from models import PacketData, DeviceData, PortInfo, SecurityRecommendation, db
 from sniffing import start_sniffing, process_packet
 import threading
 from datetime import datetime
 import asyncio
 from nmap_scanner import scan_device, start_scan_for_new_devices
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.config.from_object('config.Config')
 
 db.init_app(app)
@@ -83,9 +83,62 @@ def initialize_sniffer():
 
 @app.route('/')
 def index():
-    packets = PacketData.query.all()
+    return render_template('dashboard.html')
+
+@app.route('/devices')
+def devices():
+    return render_template('devices.html')
+
+@app.route('/packets')
+def packets():
+    return render_template('packets.html')
+
+@app.route('/security')
+def security():
+    return render_template('security.html')
+
+# API endpoints for getting data
+@app.route('/api/devices')
+def get_devices():
     devices = DeviceData.query.all()
-    return f"Captured {len(packets)} packets. Tracked {len(devices)} devices."
+    return jsonify([{
+        'id': device.id,
+        'name': device.device_name,
+        'ip': device.ip_address,
+        'mac': device.mac_address,
+        'type': device.device_type,
+        'os': device.os_name,
+        'last_seen': device.last_seen.isoformat() if device.last_seen else None,
+        'open_ports': device.open_ports
+    } for device in devices])
+
+@app.route('/api/packets/recent')
+def get_recent_packets():
+    packets = PacketData.query.order_by(PacketData.timestamp.desc()).limit(100).all()
+    return jsonify([{
+        'id': packet.id,
+        'timestamp': packet.timestamp.isoformat(),
+        'src_ip': packet.src_ip,
+        'dst_ip': packet.dst_ip,
+        'protocol': packet.ip_proto,
+        'src_port': packet.sport,
+        'dst_port': packet.dport,
+        'is_encrypted': packet.is_encrypted
+    } for packet in packets])
+
+@app.route('/api/security/recommendations')
+def get_security_recommendations():
+    recommendations = SecurityRecommendation.query.all()
+    return jsonify([{
+        'id': rec.id,
+        'device_name': rec.device_name,
+        'device_ip': rec.device_ip,
+        'port': rec.port,
+        'service': rec.service,
+        'current_state': rec.current_state,
+        'recommendation': rec.recommendation,
+        'status': rec.status
+    } for rec in recommendations])
 
 def run_async_tasks():
     loop = asyncio.new_event_loop()
