@@ -113,3 +113,16 @@ class SecurityRecommendation(db.Model):
 
     def __repr__(self):
         return f'<SecurityRecommendation {self.device_name}:{self.port} - {self.status}>'
+
+class CollectedInfo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    device_ip = db.Column(db.String(39), nullable=False)
+    device_username = db.Column(db.String(255))
+    device_pass = db.Column(db.String(255))
+    device_image = db.Column(db.String(255))
+    message = db.Column(db.Text)
+    severity = db.Column(db.String(20), nullable=False)  # 'high', 'medium', 'low'
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<CollectedInfo {self.id}: {self.device_ip} - {self.severity}>'

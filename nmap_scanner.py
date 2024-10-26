@@ -251,6 +251,7 @@ async def scan_device(app, ip_address):
 
             device.tcp_sequence_difficulty = scan_data['scan'][ip_address].get('tcpsequence', {}).get('difficulty', 'Unknown')
             port_lt=[]
+            product_value=None
             # Update device_type and product
             if 'tcp' in host_info:
                 
@@ -260,7 +261,8 @@ async def scan_device(app, ip_address):
 
                 for port, port_info in host_info['tcp'].items():
                     if 'product' in port_info and port_info['product']:
-                        device.product = port_info['product']
+                        product_value = port_info['product']
+                        device.product = product_value
                         device.device_type = determine_device_type(port_info['product'])
                         break  # Use the first product found
 
@@ -278,6 +280,15 @@ async def scan_device(app, ip_address):
                     port_obj.last_scanned = datetime.utcnow()
 
             device.last_scanned = datetime.utcnow()
+
+            if not product_value:
+                os_info = host_info.get('osmatch', [])
+                if os_info and os_info[0]['osclass']:
+                    os_class_details = os_info[0]['osclass']
+                    if os_class_details[0]['type']:
+                        device.device_name = os_class_details[0]['type']
+                        device.device_type = os_class_details[0]['type']
+
             if len(port_lt)!=0:    
                 device.open_ports=port_lt[:]
             db.session.commit()

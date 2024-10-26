@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from models import PacketData, DeviceData, PortInfo, SecurityRecommendation, db
 from sniffing import start_sniffing, process_packet
+from packet_details import analyzed_captured_packet
 import threading
 from datetime import datetime
 import asyncio
@@ -68,11 +69,14 @@ def packet_callback(packet):
         dst_port = packet_info.get('dport', 'N/A')
         #print(f"Captured packet: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
         
+        # add asynch to analyze packet 
+        analyzed_captured_packet(app, packet_info)
+
         ## THIS SHOULD BE UPDATED LATER 
         #update_device_data(packet_info)
 
         ## REMOVE THIS FOR ALL TRAFFIC
-        if packet_info['src_ip'] in ['192.168.137.25', '192.168.137.213', '192.168.137.193']:
+        if packet_info['src_ip'] in ['192.168.137.240', '192.168.137.57', '192.168.137.102']:
             update_device_data(packet_info)
             #print(f"Table Updated: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
 
