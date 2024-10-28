@@ -1,7 +1,7 @@
 import nmap
 from datetime import datetime, timedelta
 import asyncio
-from models import db, DeviceData, PortInfo, SecurityRecommendation
+from models import db, User, DeviceData, PortInfo, SecurityRecommendation, Notification
 import ssl
 import socket
 from datetime import datetime
@@ -104,6 +104,22 @@ async def encryption_recommendation_engine(app, ip_address):
             else:
                 new_recommendation = create_recommendation(device, port_info)
                 db.session.add(new_recommendation)
+
+            notification_message = f"New security recommendations for {device.device_name} ({ip_address}). "
+            notification_message += f"Open ports: {', '.join(str(p.port_number) for p in device_ports)}. "
+            
+            if existing_recommendation:
+                notification_message += "Updated vulnerability assessment available."
+            else:
+                notification_message += "New vulnerability assessment available."
+            
+            new_notification = Notification(
+                device_name=device.device_name,
+                device_ip=ip_address,
+                message=notification_message
+            )
+
+            db.session.add(new_notification)
 
         try:
             db.session.commit()

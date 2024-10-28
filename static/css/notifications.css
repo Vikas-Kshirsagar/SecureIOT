@@ -1,0 +1,32 @@
+/* static/css/notifications.css */
+
+#notificationDropdown {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+#notificationDropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+#notificationDropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#notificationDropdown::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+#notificationDropdown::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.notification-item {
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}

@@ -1,17 +1,34 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from models import PacketData, DeviceData, PortInfo, SecurityRecommendation, db
+from models import PacketData, DeviceData, PortInfo, SecurityRecommendation, db, User, Notification
 from sniffing import start_sniffing, process_packet
 from packet_details import analyzed_captured_packet
 import threading
 from datetime import datetime
 import asyncio
 from nmap_scanner import scan_device, start_scan_for_new_devices
+from faker import Faker
+from random import randint
+import json
 
 app = Flask(__name__, static_folder='static')
 app.config.from_object('config.Config')
 
 db.init_app(app)
+
+def create_fake_users(total):
+    fake = Faker()
+    for i in range(total):
+        user = User(
+            username=fake.user_name(),
+            age=randint(18, 100),
+            email=fake.email(),
+            phone=fake.phone_number(),
+            address=fake.address()
+        )
+        db.session.add(user)
+    db.session.commit()
+    print(f'Created {total} fake users and added them to the database')
 
 def update_device_data(packet_info):
     with app.app_context():
@@ -76,7 +93,7 @@ def packet_callback(packet):
         #update_device_data(packet_info)
 
         ## REMOVE THIS FOR ALL TRAFFIC
-        if packet_info['src_ip'] in ['192.168.137.240', '192.168.137.57', '192.168.137.102']:
+        if packet_info['src_ip'] in ['192.168.137.240', '192.168.137.57', '192.168.137.57']:
             update_device_data(packet_info)
             #print(f"Table Updated: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
 
@@ -144,6 +161,40 @@ def get_security_recommendations():
         'status': rec.status
     } for rec in recommendations])
 
+@app.route('/api/device/<ip>/security')
+def get_device_security(ip):
+    recommendations = SecurityRecommendation.query.filter_by(device_ip=ip).all()
+    return jsonify([{
+        'id': rec.id,
+        'device_name': rec.device_name,
+        'port': rec.port,
+        'service': rec.service,
+        'current_state': rec.current_state,
+        'recommendation': rec.recommendation,
+        'status': rec.status
+    } for rec in recommendations])
+
+@app.route('/api/notifications')
+def get_notifications():
+    notifications = Notification.query.filter_by(is_read=False).order_by(Notification.created_at.desc()).all()
+    return jsonify([{
+        'id': n.id,
+        'device_name': n.device_name,
+        'device_ip': n.device_ip,
+        'message': n.message,
+        'created_at': n.created_at.isoformat()
+    } for n in notifications])
+
+@app.route('/api/notifications/<int:id>', methods=['POST'])
+def mark_notifications_read():
+    data = request.get_json()
+    notification_ids = data.get('ids', [])
+    
+    if notification_ids:
+        Notification.query.filter(Notification.id.in_(notification_ids)).update({Notification.is_read: True}, synchronize_session=False)
+        db.session.commit()
+    return jsonify({'success': True})
+
 def run_async_tasks():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -158,6 +209,7 @@ def run_async_tasks():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Ensure tables are created before starting the app
+        create_fake_users(10)
     
     initialize_sniffer()  # Call the function to start the sniffer
     
