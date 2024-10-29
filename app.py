@@ -118,6 +118,25 @@ def packets():
 def security():
     return render_template('security.html')
 
+@app.route('/users')
+def users():
+    return render_template('users.html')
+
+@app.route('/api/users')
+def get_users():
+    users = User.query.all()
+    return jsonify([{
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'age': user.age,
+        'phone': user.phone,
+        'address': user.address,
+        'created_at': user.created_at.isoformat() if user.created_at else None
+    } for user in users])
+
+
+
 # API endpoints for getting data
 @app.route('/api/devices')
 def get_devices():
@@ -186,12 +205,10 @@ def get_notifications():
     } for n in notifications])
 
 @app.route('/api/notifications/<int:id>', methods=['POST'])
-def mark_notifications_read():
-    data = request.get_json()
-    notification_ids = data.get('ids', [])
-    
-    if notification_ids:
-        Notification.query.filter(Notification.id.in_(notification_ids)).update({Notification.is_read: True}, synchronize_session=False)
+def mark_notification_read(id):
+    notification = Notification.query.get(id)
+    if notification:
+        notification.is_read = True
         db.session.commit()
     return jsonify({'success': True})
 
