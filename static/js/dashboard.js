@@ -1,4 +1,42 @@
 // static/js/dashboard.js
+function renderCharts() {
+    fetch('/api/traffic-stats')
+        .then(response => response.json())
+        .then(data => {
+            // Pie chart for Encrypted vs Unencrypted Traffic
+            new Chart(document.getElementById('trafficChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Encrypted', 'Unencrypted'],
+                    datasets: [{
+                        data: [data.encrypted, data.unencrypted],
+                        backgroundColor: ['#4CAF50', '#F44336'],
+                    }]
+                }
+            });
+
+            // Bar chart for Device Types
+            new Chart(document.getElementById('deviceTypeChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data.device_types),
+                    datasets: [{
+                        label: 'Device Types',
+                        data: Object.values(data.device_types),
+                        backgroundColor: '#3E95CD',
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+}
+
 function updateDashboard() {
     // Update device stats
     fetch('/api/devices')
@@ -39,6 +77,10 @@ function updateDashboard() {
             `).join('');
             document.getElementById('recentPackets').innerHTML = recentPacketsHtml;
         });
+
+    // Fetch and render charts
+    renderCharts();
 }
+
 setInterval(updateDashboard, 5000); // for dashboard.html
 updateDashboard()

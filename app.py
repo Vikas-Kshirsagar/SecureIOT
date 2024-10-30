@@ -212,6 +212,23 @@ def mark_notification_read(id):
         db.session.commit()
     return jsonify({'success': True})
 
+@app.route('/api/traffic-stats')
+def traffic_stats():
+    encrypted_traffic = PacketData.query.filter_by(is_encrypted=True).count()
+    unencrypted_traffic = PacketData.query.filter_by(is_encrypted=False).count()
+
+    # Device type breakdown
+    device_types = {}
+    for device in DeviceData.query.all():
+        device_types[device.device_type] = device_types.get(device.device_type, 0) + 1
+
+    return jsonify({
+        'encrypted': encrypted_traffic,
+        'unencrypted': unencrypted_traffic,
+        'device_types': device_types
+    })
+
+
 def run_async_tasks():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
