@@ -1,6 +1,15 @@
 // static/js/security.js
 function updateSecurity() {
-    fetch('/api/security/recommendations')
+    // Get device IP from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const deviceIp = urlParams.get('device');
+    
+    // Choose endpoint based on whether device parameter exists
+    const endpoint = deviceIp 
+        ? `/api/device/${deviceIp}/security`
+        : '/api/security/recommendations';
+
+    fetch(endpoint)
         .then(response => response.json())
         .then(recommendations => {
             const recommendationsHtml = recommendations.map(rec => `
@@ -14,5 +23,6 @@ function updateSecurity() {
             document.getElementById('securityRecommendations').innerHTML = recommendationsHtml;
         });
 }
-setInterval(updateSecurity, 10000); // for security.html
-updateSecurity()
+
+setInterval(updateSecurity, 10000);
+updateSecurity();

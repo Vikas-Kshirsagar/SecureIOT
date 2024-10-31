@@ -93,7 +93,7 @@ def packet_callback(packet):
         #update_device_data(packet_info)
 
         ## REMOVE THIS FOR ALL TRAFFIC
-        if packet_info['src_ip'] in ['192.168.137.240', '192.168.137.57', '192.168.137.57']:
+        if packet_info['src_ip'] in ['192.168.137.46', '192.168.137.25', '192.168.137.57']:
             update_device_data(packet_info)
             #print(f"Table Updated: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
 
@@ -134,8 +134,6 @@ def get_users():
         'address': user.address,
         'created_at': user.created_at.isoformat() if user.created_at else None
     } for user in users])
-
-
 
 # API endpoints for getting data
 @app.route('/api/devices')
@@ -186,6 +184,7 @@ def get_device_security(ip):
     return jsonify([{
         'id': rec.id,
         'device_name': rec.device_name,
+        'device_ip': rec.device_ip,
         'port': rec.port,
         'service': rec.service,
         'current_state': rec.current_state,
@@ -214,20 +213,22 @@ def mark_notification_read(id):
 
 @app.route('/api/traffic-stats')
 def traffic_stats():
-    encrypted_traffic = PacketData.query.filter_by(is_encrypted=True).count()
-    unencrypted_traffic = PacketData.query.filter_by(is_encrypted=False).count()
+    # Safely count encrypted and unencrypted traffic
+    encrypted_traffic = PacketData.query.filter_by(is_encrypted=True).count() or 0
+    unencrypted_traffic = PacketData.query.filter_by(is_encrypted=False).count() or 0
 
-    # Device type breakdown
+    # Initialize device type dictionary with default zero values
     device_types = {}
     for device in DeviceData.query.all():
-        device_types[device.device_type] = device_types.get(device.device_type, 0) + 1
+        device_type = device.device_type or "Unknown"  # Handle cases where device.type is None
+        device_types[device_type] = device_types.get(device_type, 0) + 1
 
+    # Prepare the response, ensuring no 'NoneType' is present
     return jsonify({
         'encrypted': encrypted_traffic,
         'unencrypted': unencrypted_traffic,
         'device_types': device_types
     })
-
 
 def run_async_tasks():
     loop = asyncio.new_event_loop()
