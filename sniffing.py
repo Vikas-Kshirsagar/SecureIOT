@@ -101,5 +101,5 @@ def process_packet(packet):
 def start_sniffing(callback):
     print("Starting packet sniffing...")
     #sniff(iface="Local Area Connection* 2", prn=callback, store=0)
-    sniff(iface="Local Area Connection* 2", filter="ip and (host 192.168.137.70 or host 192.168.137.25 or host 192.168.137.57)", prn=callback, store=0)
+    sniff(iface="Local Area Connection* 2", filter="ip and (host 192.168.137.2 or host 192.168.137.103)", prn=callback, store=0)
     #sniff(iface="Local Area Connection* 2", filter="ip and host 192.168.137.84", prn=callback, store=0)

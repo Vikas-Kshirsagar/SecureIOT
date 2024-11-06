@@ -93,7 +93,7 @@ def packet_callback(packet):
         #update_device_data(packet_info)
 
         ## REMOVE THIS FOR ALL TRAFFIC
-        if packet_info['src_ip'] in ['192.168.137.70', '192.168.137.25', '192.168.137.57']:
+        if packet_info['src_ip'] in ['192.168.137.2', '192.168.137.103']:
             update_device_data(packet_info)
             #print(f"Table Updated: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
 
@@ -250,6 +250,35 @@ def get_device_info(ip):
         'password': None,
         'links': None
     })
+
+@app.route('/api/device-hosts/<ip>')
+def get_device_hosts(ip):
+    # Get all unique connections to/from this IP
+    packets = PacketData.query.filter(
+        (PacketData.src_ip == ip) | (PacketData.dst_ip == ip)
+    ).distinct(PacketData.src_ip, PacketData.dst_ip).all()
+    
+    # Create a set to store unique host IPs
+    host_ips = set()
+    for packet in packets:
+        if packet.src_ip == ip:
+            host_ips.add(packet.dst_ip)
+        else:
+            host_ips.add(packet.src_ip)
+    
+    # Get device information for each host
+    hosts = []
+    for host_ip in host_ips:
+        device = PacketData.query.filter_by(src_ip=host_ip).first()
+        host_info = {
+            'ip': host_ip,
+            'name': device.device_name if device else None,
+            'last_seen': device.timestamp.isoformat() if device and device.timestamp else None
+        }
+        hosts.append(host_info)
+    
+    return jsonify(hosts)
+
 
 def run_async_tasks():
     loop = asyncio.new_event_loop()
