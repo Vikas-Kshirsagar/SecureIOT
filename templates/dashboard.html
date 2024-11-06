@@ -1,27 +1,81 @@
-<!-- dashboard.html -->
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+    <!-- Device Overview Panel -->
     <div class="bg-white p-4 rounded-lg shadow">
         <h2 class="text-lg font-bold mb-4">Device Overview</h2>
-        <div id="deviceStats" class="space-y-2"></div>
+        <div id="deviceStats" class="space-y-2">
+            <p>Loading device statistics...</p>
+        </div>
     </div>
+
+    <!-- Recent Activity Panel -->
     <div class="bg-white p-4 rounded-lg shadow">
         <h2 class="text-lg font-bold mb-4">Recent Activity</h2>
-        <div id="recentPackets" class="space-y-2"></div>
+        <div id="recentPackets" class="space-y-2">
+            <p>Loading recent packets...</p>
+        </div>
     </div>
+
+    <!-- Traffic Analysis Panel -->
     <div class="bg-white p-4 rounded-lg shadow">
         <h2 class="text-lg font-bold mb-4">Traffic Analysis</h2>
-        <canvas id="trafficChart"></canvas>
+        <div class="h-64">
+            <canvas id="trafficChart"></canvas>
+        </div>
     </div>
+
+    <!-- Device Types Panel -->
     <div class="bg-white p-4 rounded-lg shadow">
         <h2 class="text-lg font-bold mb-4">Device Types</h2>
-        <canvas id="deviceTypeChart"></canvas>
+        <div class="h-64">
+            <canvas id="deviceTypeChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Protocol Distribution Panel -->
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-bold mb-4">Protocol Distribution</h2>
+        <div class="h-64">
+            <canvas id="protocolChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Most Active Ports Panel -->
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-bold mb-4">Most Active Ports</h2>
+        <div class="h-64">
+            <canvas id="portChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Security Overview Panel -->
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-bold mb-4">Security Overview</h2>
+        <div class="h-64">
+            <canvas id="securityChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Protocol Traffic Timeline Panel -->
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-bold mb-4">Protocol Traffic Timeline</h2>
+        <div class="h-64">
+            <canvas id="protocolTimelineChart"></canvas>
+        </div>
     </div>
 </div>
+
 {% endblock %}
-{% block extra_js %}
+
+{% block head %}
+<!-- Add this to the head section -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block scripts %}
+<!-- Then load your dashboard.js -->
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

@@ -1,0 +1,30 @@
+<!-- information.html -->
+{% extends "base.html" %}
+{% block title %}Device Information{% endblock %}
+{% block content %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-bold mb-4">Credentials Information</h2>
+        <div id="credentialsInfo" class="space-y-2">
+            <div class="p-4 border rounded">
+                <p class="font-semibold">Device IP: <span id="deviceIp"></span></p>
+                <p class="mt-2">Username: <span id="username"></span></p>
+                <p>Password: <span id="password"></span></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-bold mb-4">Captured Links</h2>
+        <div id="linksInfo" class="space-y-2">
+            <ul id="linksList" class="list-disc pl-5">
+                <!-- Links will be populated here -->
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/information.js') }}"></script>
+{% endblock %}

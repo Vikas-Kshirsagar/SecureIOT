@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from models import PacketData, DeviceData, PortInfo, SecurityRecommendation, db, User, Notification
+from models import PacketData, DeviceData, PortInfo, SecurityRecommendation, db, User, Notification, CollectedInfo
 from sniffing import start_sniffing, process_packet
 from packet_details import analyzed_captured_packet
 import threading
@@ -93,7 +93,7 @@ def packet_callback(packet):
         #update_device_data(packet_info)
 
         ## REMOVE THIS FOR ALL TRAFFIC
-        if packet_info['src_ip'] in ['192.168.137.46', '192.168.137.25', '192.168.137.57']:
+        if packet_info['src_ip'] in ['192.168.137.70', '192.168.137.25', '192.168.137.57']:
             update_device_data(packet_info)
             #print(f"Table Updated: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
 
@@ -228,6 +228,27 @@ def traffic_stats():
         'encrypted': encrypted_traffic,
         'unencrypted': unencrypted_traffic,
         'device_types': device_types
+    })
+
+@app.route('/information/<ip>')
+def device_information(ip):
+    return render_template('information.html')
+
+@app.route('/api/device-info/<ip>')
+def get_device_info(ip):
+    info = CollectedInfo.query.filter_by(device_ip=ip).first()
+    if info:
+        return jsonify({
+            'device_ip': info.device_ip,
+            'username': info.device_username,
+            'password': info.device_pass,
+            'links': info.message
+        })
+    return jsonify({
+        'device_ip': ip,
+        'username': None,
+        'password': None,
+        'links': None
     })
 
 def run_async_tasks():
