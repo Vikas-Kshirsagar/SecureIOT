@@ -1,0 +1,41 @@
+{
+  "SSL_ERROR": {
+    "title": "SSL/TLS Configuration Error Resolution",
+    "applicability": {
+      "port": 443,
+      "service": "https",
+      "condition": "ssl_error"
+    },
+    "steps": [
+      {
+        "title": "Practical Steps",
+        "items": [
+          "Access the device's administration panel to inspect the SSL/TLS configuration and supported protocols.",
+          "Confirm that the device supports modern TLS versions (e.g., TLS 1.2 or TLS 1.3).",
+          "If outdated protocols are detected, disable SSL and older TLS versions.",
+          "If no option exists to configure TLS, consider routing traffic through a reverse proxy that supports modern encryption protocols (e.g., nginx or HAProxy)."
+        ]
+      },
+      {
+        "title": "SSL/TLS Protocol Analysis",
+        "items": [
+          "Use OpenSSL to test supported protocols:",
+          "openssl s_client -connect host:443 -tls1_2",
+          "openssl s_client -connect host:443 -tls1_3",
+          "Check cipher suites compatibility:",
+          "nmap --script ssl-enum-ciphers -p 443 [host]"
+        ]
+      },
+      {
+        "title": "Certificate Verification",
+        "items": [
+          "Verify certificate validity and chain:",
+          "openssl verify -CAfile /path/to/ca-bundle.crt certificate.crt",
+          "Check certificate expiration:",
+          "openssl x509 -in certificate.crt -noout -dates",
+          "Ensure proper certificate installation in the correct location"
+        ]
+      }
+    ]
+  }
+}

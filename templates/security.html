@@ -1,14 +1,47 @@
-<!-- security.html -->
 {% extends "base.html" %}
+
 {% block title %}Security Recommendations{% endblock %}
+
+{% block head %}
+<link href="{{ url_for('static', filename='css/security.css') }}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="bg-white p-4 rounded-lg shadow">
-    <h2 class="text-lg font-bold mb-4">Security Analysis</h2>
-    <div id="securityRecommendations" class="space-y-4">
-        <!-- Content will be populated by JavaScript -->
+<div class="min-h-screen">
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Security Analysis and Recommendations</h1>
+            <div class="flex items-center space-x-2">
+                <span id="lastUpdate" class="text-sm text-gray-500"></span>
+                <button onclick="manualRefresh()" class="refresh-button">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div id="securityRecommendations" class="space-y-6">
+            <!-- Content will be populated by JavaScript -->
+        </div>
     </div>
 </div>
+
+<div class="loading-overlay">
+    <div class="flex flex-col items-center">
+        <div class="loading-spinner"></div>
+        <p class="mt-4 text-gray-600">Updating recommendations...</p>
+    </div>
+</div>
+
+<div class="min-h-screen mt-8">
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Firmware Update Check</h2>
+        <div id="firmwareUpdatePanel" class="text-gray-700">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+</div>
+
 {% endblock %}
+
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/security.js') }}"></script>
 {% endblock %}

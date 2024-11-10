@@ -1,0 +1,37 @@
+{
+    "UNMODIFIABLE_DEVICE": {
+        "title": "Secure Access Implementation for Unmodifiable Devices",
+        "steps": [
+            {
+                "title": "Traffic Routing via Proxy",
+                "items": [
+                    "Route traffic through a secure proxy server that encrypts traffic and manages external communication",
+                    "Consider routing traffic through a reverse proxy that supports modern encryption protocols (e.g., nginx or HAProxy) if no option exists to configure TLS"
+                ]
+            },
+            {
+                "title": "Proxy Setup for TLS Offloading",
+                "items": [
+                    "Configure nginx to serve as an intermediary for TLS encryption offloading",
+                    "Example nginx configuration:",
+                    "server {\n    listen 443 ssl;\n    server_name [domain];\n    ssl_certificate /etc/nginx/ssl/mycert.crt;\n    ssl_certificate_key /etc/nginx/ssl/mycert.key;\n    location / {\n        proxy_pass http://[ip_address]:[port];\n    }\n}"
+                ]
+            },
+            {
+                "title": "VPN Implementation",
+                "items": [
+                    "Use a VPN (e.g., OpenVPN) for secure remote access if the device does not support encryption natively",
+                    "Configure VPN server to route all traffic to the device through encrypted tunnel"
+                ]
+            },
+            {
+                "title": "External Firewall Protection",
+                "items": [
+                    "Implement firewall rules to limit external access to the device",
+                    "Enforce network-level encryption policies",
+                    "Configure access control lists (ACLs) to restrict device communication to authorized hosts only"
+                ]
+            }
+        ]
+    }
+}

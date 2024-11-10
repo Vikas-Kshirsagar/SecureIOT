@@ -150,7 +150,7 @@ def update_recommendation_details(recommendation, port_info, device):
         recommendation.encryption_needed = True
         recommendation.certificate_required = True
         recommendation.current_encryption = 'None'
-        recommendation.current_state = f'Unencrypted {port_info.service.upper()}'
+        recommendation.current_state = f"The Device's web interface is accessible over {port_info.service.upper()}, which transmits data in plaintext."
         
         secure_service = {
             'http': 'HTTPS',
@@ -189,7 +189,7 @@ def update_recommendation_details(recommendation, port_info, device):
         recommendation.encryption_needed = False
         recommendation.certificate_required = False
         recommendation.current_encryption = 'Unknown'
-        recommendation.current_state = f'Unknown service on port {port_info.port_number}'
+        recommendation.current_state = f'Unknown service detected running on port {port_info.port_number}'
         recommendation.recommendation = 'Investigate service and determine if encryption is needed'
 
     recommendation.action_taken = 'Pending'

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from models import PacketData, DeviceData, PortInfo, SecurityRecommendation, db, User, Notification, CollectedInfo
 from sniffing import start_sniffing, process_packet
 from packet_details import analyzed_captured_packet
+from check_firmware import check_latest_firmware
 import threading
 from datetime import datetime
 import asyncio
@@ -93,7 +94,7 @@ def packet_callback(packet):
         #update_device_data(packet_info)
 
         ## REMOVE THIS FOR ALL TRAFFIC
-        if packet_info['src_ip'] in ['192.168.137.2', '192.168.137.103']:
+        if packet_info['src_ip'] in ['192.168.137.169', '192.168.137.100']:
             update_device_data(packet_info)
             #print(f"Table Updated: {packet_info['src_ip']}:{src_port} -> {packet_info['dst_ip']}:{dst_port}")
 
@@ -279,6 +280,35 @@ def get_device_hosts(ip):
     
     return jsonify(hosts)
 
+@app.route('/check_firmware_update/<ip>', methods=['GET'])
+def firmware_update_check(ip):
+    try:
+        # Query the database for the device name using the IP address
+        device = DeviceData.query.filter_by(ip_address=ip).first()
+        if not device:
+            return jsonify({
+                'status': 'error',
+                'message': 'Device not found'
+            }), 404
+            
+        result = check_latest_firmware(device.product, device.os_name)
+        if result:
+            return jsonify({
+                'status': 'success',
+                'data': result
+            })
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'No firmware information available'
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+        
 
 def run_async_tasks():
     loop = asyncio.new_event_loop()

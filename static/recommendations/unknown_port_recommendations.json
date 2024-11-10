@@ -1,0 +1,39 @@
+{
+  "UNKNOWN_SERVICE": {
+    "title": "Unknown Service Investigation and Security Assessment",
+    "applicability": {
+      "service": "unknown"
+    },
+    "steps": [
+      {
+        "title": "Service Identification",
+        "items": [
+          "Use nmap with service version detection:",
+          "nmap -sV -p [port] [ip_address]",
+          "For more detailed analysis:",
+          "nmap -A -T4 -p [port] [ip_address]",
+          "Check if the service responds to common protocols:",
+          "nc -zv [ip_address] [port]"
+        ]
+      },
+      {
+        "title": "Security Assessment",
+        "items": [
+          "Document the port number and any service information obtained",
+          "Verify if this port should be open according to device documentation",
+          "Check device logs for any connection attempts to this port",
+          "Consider firewall rules to restrict access if the service is unnecessary"
+        ]
+      },
+      {
+        "title": "Best Practices",
+        "items": [
+          "Maintain an updated inventory of all open ports and their purposes",
+          "Regularly scan for new open ports",
+          "Implement the principle of least privilege - close unnecessary ports",
+          "Document any required open ports in your network security policy"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+{
+    "HTTP_to_HTTPS": {
+      "title": "Install an SSL/TLS Certificate and Migrate from HTTP to HTTPS",
+      "applicability": {
+        "port": 80,
+        "service": "http"
+      },
+      "steps": [
+        {
+          "title": "Practical Steps",
+          "items": [
+            "Check if the device's firmware or web interface allows you to upload or configure SSL/TLS certificates.",
+            "Generate a self-signed certificate if public CA-signed certificates are not feasible, although this is less secure than a trusted CA-signed certificate.",
+            "Use tools like OpenSSL to create a self-signed certificate:",
+            "openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout mycert.key -out mycert.crt"
+          ]
+        },
+        {
+          "title": "Additional Security Measures",
+          "items": [
+            "Configure the web server to redirect all HTTP traffic to HTTPS",
+            "Implement HTTP Strict Transport Security (HSTS)",
+            "Regularly monitor certificate expiration dates",
+            "Use strong cipher suites and disable outdated protocols"
+          ]
+        },
+        {
+          "title": "Best Practices",
+          "items": [
+            "Use certificates from trusted Certificate Authorities for production environments",
+            "Implement automatic certificate renewal where possible",
+            "Keep private keys secured and backed up",
+            "Document certificate installation and renewal procedures"
+          ]
+        }
+      ]
+    }
+  }
