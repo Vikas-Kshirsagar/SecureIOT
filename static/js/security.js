@@ -55,7 +55,7 @@ async function checkFirmwareUpdate(ip) {
         if (data.status === 'success') {
             messageHtml = `
                 <div class="p-4 bg-green-50 rounded-lg">
-                    <h3 class="font-bold text-green-800">Firmware Information</h3>
+                    <h3 class="font-bold text-green-800">Available Firmware Version</h3>
                     <pre class="mt-2 text-sm text-green-700">${JSON.stringify(data.data, null, 2)}</pre>
                 </div>
             `;
@@ -211,7 +211,11 @@ async function loadDetailedRecommendations(port, service, current_state, deviceI
         }
         
         // Check for unmodifiable device condition
-        if (current_state.toLowerCase().includes('unmodifiable') || 
+        if (port === 443 && service.toLowerCase() === 'https' &&
+            current_state.toLowerCase().includes('timed out') ||
+            current_state.toLowerCase().includes('error') ||
+            current_state.toLowerCase().includes('refused') ||
+            current_state.toLowerCase().includes('unmodifiable') || 
             current_state.toLowerCase().includes('cannot modify') || 
             current_state.toLowerCase().includes('no configuration access')) {
             recommendationFile = '/static/recommendations/reverse_proxy_recommendations.json';

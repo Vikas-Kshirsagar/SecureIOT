@@ -84,3 +84,11 @@
         transform: rotate(360deg);
     }
 }
+
+#securityRecommendations:empty {
+    display: none;
+}
+
+.recommendations-panel:has(#securityRecommendations:empty) {
+    display: none;
+}

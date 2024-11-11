@@ -1,14 +1,50 @@
+<!-- security.html -->
 {% extends "base.html" %}
-
 {% block title %}Security Recommendations{% endblock %}
-
 {% block head %}
 <link href="{{ url_for('static', filename='css/security.css') }}" rel="stylesheet">
-{% endblock %}
+<style>
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
 
+.panel {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    padding: 1.5rem;
+}
+
+#securityRecommendations {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Hide the recommendations panel when empty */
+#securityRecommendations:empty {
+    display: none;
+}
+
+/* Hide the entire recommendations container when empty */
+.recommendations-panel:has(#securityRecommendations:empty) {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .content-wrapper {
+        padding: 2rem;
+    }
+}
+</style>
+{% endblock %}
 {% block content %}
-<div class="min-h-screen">
-    <div class="bg-white rounded-xl shadow-lg p-6">
+<div class="content-wrapper">
+    <!-- Security Recommendations Panel -->
+    <div class="panel recommendations-panel">
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-bold text-gray-900">Security Analysis and Recommendations</h1>
             <div class="flex items-center space-x-2">
@@ -18,7 +54,15 @@
                 </button>
             </div>
         </div>
-        <div id="securityRecommendations" class="space-y-6">
+        <div id="securityRecommendations">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Firmware Update Panel -->
+    <div class="panel">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Firmware Update Status</h2>
+        <div id="firmwareUpdatePanel" class="text-gray-700">
             <!-- Content will be populated by JavaScript -->
         </div>
     </div>
@@ -30,18 +74,7 @@
         <p class="mt-4 text-gray-600">Updating recommendations...</p>
     </div>
 </div>
-
-<div class="min-h-screen mt-8">
-    <div class="bg-white rounded-xl shadow-lg p-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Firmware Update Check</h2>
-        <div id="firmwareUpdatePanel" class="text-gray-700">
-            <!-- Content will be populated by JavaScript -->
-        </div>
-    </div>
-</div>
-
 {% endblock %}
-
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/security.js') }}"></script>
 {% endblock %}
