@@ -1,16 +1,16 @@
 # SecureIOT
 ### Detection of Unencrypted Traffic and Automated Encryption Recommendation System for IoT Devices and Legacy Systems
 
-✨SecureIOT is a cloud-enabled, mobile-ready, offline-storage compatible Web Application.✨ 
+SecureIOT is a cloud-enabled, mobile-ready, offline-storage compatible Web Application.
 
-## 📖 Overview  
+## Overview  
 In today’s interconnected world, ensuring secure communication is vital—yet many IoT devices and legacy systems still transmit data without encryption, leaving them vulnerable to cyberattacks. This project aims to **detect unencrypted traffic** in real-time and provide **automated recommendations for implementing encryption** to enhance network security.  
 
 By identifying vulnerabilities in both modern and outdated systems, this project strives to reduce the risk of data breaches and bolster overall system reliability.
 
 ---
 
-## 🎯 Objectives  
+## Objectives  
 - **Detect Unencrypted Traffic**: Monitor and identify unencrypted network traffic in real-time.  
 - **Automated Recommendations**: Suggest encryption mechanisms tailored to the device or system.  
 - **Support for IoT and Legacy Systems**: Provide practical solutions for devices with limited processing power or older architectures.  
@@ -18,7 +18,7 @@ By identifying vulnerabilities in both modern and outdated systems, this project
 
 ---
 
-## 🛠 Features  
+## Features  
 - **Traffic Analysis**: Scans network traffic to detect unencrypted data streams.  
 - **Encryption Recommendations**: Automated guidance for securing identified vulnerabilities using appropriate encryption techniques.  
 - **IoT Device Compatibility**: Optimized for resource-constrained IoT devices.  
@@ -27,7 +27,7 @@ By identifying vulnerabilities in both modern and outdated systems, this project
 
 ---
 
-## 💡 How It Works  
+## How It Works  
 1. **Traffic Detection**: The system scans network packets for unencrypted traffic patterns.  
 2. **Classification**: Uses algorithms to categorize the devices and their encryption states.  
 3. **Recommendation Engine**: Provides actionable steps and compatible encryption methods tailored to each device/system.  
@@ -35,7 +35,7 @@ By identifying vulnerabilities in both modern and outdated systems, this project
 
 ---
 
-## 🚀 Tech Stack  
+## Tech Stack  
 - **Programming Language**: Python  
 - **Traffic Analysis**: Wireshark, Scapy, or Python-nmap  
 - **Dashboard Framework**: Flask/Django with a Bootstrap UI  
@@ -44,22 +44,14 @@ By identifying vulnerabilities in both modern and outdated systems, this project
 
 ---
 
-## 📂 Project Structure
-├── src/ # Core codebase
-│ ├── static/ # Static resources like Javascript, CSS and recommended details
-│ ├── templates/ # HTML templates to render information
-├── app.py/ # application file along with other modules
-├── requirements.txt/ # Document of requirements
-└── README.md # Project introduction and setup guide
-
 ## Installation
 ---
 
-## 🔧 Installation & Setup  
+## Installation & Setup  
 **Clone the repository**:  
 ```bash
 git clone https://github.com/Vikas-Kshirsagar/SecureIOT
-cd SecureIOT
+cd project-name
 ```
 
 **Install dependencies**:  
