@@ -50,7 +50,7 @@ By identifying vulnerabilities in both modern and outdated systems, this project
 **Clone the repository**:  
 ```bash
 git clone https://github.com/Vikas-Kshirsagar/SecureIOT
-cd project-name
+cd SecureIOT
 ```
 
 **Install dependencies**:  
