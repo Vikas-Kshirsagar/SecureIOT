@@ -88,17 +88,23 @@ Special thanks to the tools and resources that supported this project:
 - Python Nmap
 
 ## Screenshots
+
 **Development Environment**:
+
 ![image](/static/images/Development_Environment.png)
 
 **Dashboard**:
+
 ![image](/static/images/Dashboard.png)
 
 **packet Capture**:
+
 ![image](/static/images/Packet_Capture.png)
 
 **Recommendations**:
+
 ![image](/static/images/Recommendations.png)
 
 **Firmware Recommendation**:
+
 ![image](/static/images/Firmware_Recommendation.png)
